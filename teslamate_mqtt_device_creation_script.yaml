@@ -377,6 +377,28 @@ script:
                       state_class: measurement
                       device_class: pressure
                       unit_of_measurement: bar
+                  - type: sensor
+                    config:
+                      name: Destination
+                      state_topic: "{{ base_topic ~ '/active_route' }}"
+                      value_template: '{{ "{{" }} value_json.destination {{ "}}" }}'
+                      icon: mdi:map-marker-path
+                  - type: sensor
+                    config:
+                      name: Minutes to Arrival
+                      state_topic: "{{ base_topic ~ '/active_route' }}"
+                      value_template: '{{ "{{" }} value_json.minutes_to_arrival | round(1) if value_json.minutes_to_arrival is defined else 0 {{ "}}" }}'
+                      unit_of_measurement: "min"
+                      device_class: duration
+                      icon: mdi:timer-outline
+                  - type: sensor
+                    config:
+                      name: Energy at Arrival
+                      state_topic: "{{ base_topic ~ '/active_route' }}"
+                      value_template: '{{ "{{" }} value_json.energy_at_arrival if value_json.energy_at_arrival is defined else 0 {{ "}}" }}'
+                      unit_of_measurement: "%"
+                      device_class: battery
+                      icon: mdi:battery-check
                   ## Start of Device Trackers ##
                   - type: device_tracker
                     config:
