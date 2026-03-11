@@ -1,0 +1,63 @@
+blueprint:
+  name: "TeslaMate: Smart Route Notification"
+  description: "Identifies route changes and notifies the selected target."
+  domain: automation
+  input:
+    destination_entity:
+      name: Tesla Destination Sensor
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+    notify_target:
+      name: Notification Target
+      description: "e.g. notify.mobile_app_eric_phone"
+      default: ""
+      selector:
+        text:
+mode: parallel
+max: 10
+
+trigger:
+  - platform: state
+    entity_id: !input destination_entity
+
+variables:
+  dest_entity: !input destination_entity
+  gear_entity: "{{ dest_entity.replace('_destination', '_shift_state') }}"
+  eta_entity: "{{ dest_entity.replace('_destination', '_minutes_to_arrival') }}"
+  notify_target: !input notify_target
+
+condition:
+  - condition: template
+    value_template: >
+      {{ trigger.to_state.state not in ['unknown', 'unavailable', 'none', ''] and 
+         trigger.from_state.state not in ['unknown', 'unavailable', 'none', ''] and
+         trigger.from_state.state != trigger.to_state.state }}
+
+action:
+  - delay: "00:00:20"
+  
+  - wait_template: "{{ is_state(gear_entity, 'D') }}"
+    timeout: "00:10:00"
+    continue_on_timeout: true
+
+  - wait_template: "{{ states(eta_entity) | float(-1) >= 0 }}"
+    timeout: "00:01:00"
+    continue_on_timeout: true
+
+  - condition: template
+    value_template: "{{ states(dest_entity) == trigger.to_state.state }}"
+
+  - alias: "Send Notification"
+    action: "{{ notify_target }}"
+    data:
+      title: "🚗 {{ device_name(dest_entity) }} 🚗"
+      message: >
+        {% set mins = states(eta_entity) | float(0) %}
+        {% set eta = (now() + timedelta(minutes=mins)).strftime('%-I:%M %p') %}
+        Dest: 📍 {{ trigger.to_state.state }}  ETA: 🕒 {{ eta }}
+      data:
+        tag: "{{ dest_entity }}_route"
+        ttl: 0
+        priority: high
