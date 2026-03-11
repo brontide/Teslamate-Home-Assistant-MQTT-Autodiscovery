@@ -1,0 +1,53 @@
+# useful as a sample in case the blueprint doesn't have the flexibility
+# that you need
+alias: "TESLA: Notify people route changes from TeslaMate"
+description: Sequential wait for gear shift, then navigation calculation
+triggers:
+  - trigger: state
+    entity_id: sensor.my_model_y_destination
+    id: my_model_y # just need to be unique
+    # add additional cars ( optional )
+  - trigger: state 
+    entity_id: sensor.teslacar_destination
+    id: teslacar
+conditions:
+  - condition: template
+    value_template: >
+      {{ trigger.to_state.state not in ['unknown', 'unavailable', 'none', '']
+      and 
+         trigger.from_state.state not in ['unknown', 'unavailable', 'none'] and
+         trigger.from_state.state != trigger.to_state.state }}
+actions:
+  - alias: Debounce for route edits
+    delay: "00:00:20"
+  - alias: "Step 1: Wait for Drive"
+    wait_template: >
+      {% set gear_id = trigger.entity_id.replace('_destination', '_shift_state')
+      %} {{ is_state(gear_id, 'D') }}
+    timeout: "00:10:00"
+    continue_on_timeout: true
+  - alias: "Step 2: Wait for ETA"
+    wait_template: >
+      {% set eta_id = trigger.entity_id.replace('_destination',
+      '_minutes_to_arrival') %} {{ states(eta_id) | float(0) > 0 }}
+    timeout: "00:01:00"
+    continue_on_timeout: true
+  - alias: Suppress Stale Routes
+    condition: template
+    value_template: "{{ states(trigger.entity_id) == trigger.to_state.state }}"
+  - alias: Send Notification
+    action: notify.mobile_app_my_phone  # update with device or group
+    data:
+      title: 🚗 {{ device_name(trigger.entity_id) }} 🚗
+      message: >
+        {% set eta_id = trigger.entity_id.replace('_destination',
+        '_minutes_to_arrival') %} {% set mins = states(eta_id) | float(0) %} {%
+        set eta = (now() + timedelta(minutes=mins)).strftime('%-I:%M %p') %}
+        Dest: 📍 {{ trigger.to_state.state }}  ETA: 🕒 {{ eta }}
+      data:
+        tag: "{{ trigger.id }}_route"
+        ttl: 0
+        priority: high
+mode: parallel
+max: 10
+
