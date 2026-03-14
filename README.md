@@ -7,6 +7,8 @@ See instruction below for installation from this repo or the original
 
 ## Blueprint
 
+[![Import Blueprint](https://img.shields.io/badge/Home%20Assistant-Import%20Blueprint-blue?logo=homeassistant)](https://my.home-assistant.io/redirect/blueprint_import/?blueprint_url=https://raw.githubusercontent.com/brontide/Teslamate-Home-Assistant-MQTT-Autodiscovery/refs/heads/with-blueprint-and-sample/teslamate-routing-notification-blueprint.yaml)
+
 The blueprint allows you to quickly create a route notification in Home Assistant that looks like the
 following.
 
