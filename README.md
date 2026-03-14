@@ -1,6 +1,22 @@
 # Teslamate-Home-Assistant-MQTT-Autodiscovery
 A Home Assistant Script to auto-discover MQTT topics populated by the Teslamate application
 
+Forked from: https://github.com/mekaneck/Teslamate-Home-Assistant-MQTT-Autodiscovery 
+
+See instruction below for installation from this repo or the original
+
+## Blueprint
+
+The blueprint allows you to quickly create a route notification in Home Assistant that looks like the
+following.
+
+![Route Notification Android](/assets/Screenshot_20260310-114638.png)
+
+## Sample
+
+If the Blueprint is not sufficient for your needs, please review the sample notification that can be 
+easily extended to your usecase.
+
 ## Instructions: 
   1. Copy the yaml file contents into your configuration.yaml, or if you use packages save the entire YAML file
      in your packages folder.
